@@ -1,12 +1,13 @@
-#' Get IPUMS data
-#'
-#' @param mycountry The country of interest for your local mcmsupply estimation. A list of possible countries available found in data/mycountries.rda.
-#'
-#' @return the input data for your country of interest, used as an input to the mcmsupply model
+#' Get subnational family planning source data
+#' @name get_subnational_data
+#' @param local TRUE/FALSE. Default is FALSE. local=FALSE retrieves the data for all subnational provinces across all countries. local=TRUE retrieves data for only one country.
+#' @param mycountry The country name of interest in a local run. You must have local=TRUE for this functionality. A list of possible countries available found in data/mycountries.rda.
+#' @return The input data for your country of interest, used as an input to the mcmsupply model
 #' @export
-#'
-#' @examples mydata <- get_ipumsdata("Nepal")
-get_ipumsdata <- function(mycountry) {
+#' @examples For an all-country-province dataset : mydata <- get_subnational_data(local=FALSE, mycountry=NULL)
+#' For a one-country-province dataset: mydata <- get_subnational_data(local=TRUE, mycountry="Nepal")
+
+get_subnational_data <- function(local=FALSE, mycountry=NULL) {
   load("data/subnatSE_source_data.rda")   # Read in SE data
 
   subnatSE_source_data <- subnatSE_source_data %>%
@@ -77,48 +78,52 @@ get_ipumsdata <- function(mycountry) {
 
   FP_source_data_wide <- dplyr::left_join(FP_source_data_wide, SE_source_data_wide)   # Merge SE and proportion data together
 
-  FP_source_data_wide <- FP_source_data_wide %>%
+  mydata <- FP_source_data_wide %>%
     dplyr::rowwise() %>%
     dplyr::mutate(Public = ifelse(Public < 0, 0.001, Public)) %>%   # Replace any negative numbers with approximately 0 (safety net)
     dplyr::mutate(Commercial_medical = ifelse(Commercial_medical < 0, 0.001, Commercial_medical)) %>%
     dplyr::mutate(Other = ifelse(Other < 0, 0.001, Other))
 
-  FP_source_subset <- FP_source_data_wide %>% dplyr::filter(Country==mycountry)
+  if(local==TRUE & is.null(mycountry)==FALSE) {
+    mydata <- FP_source_data_wide %>% dplyr::filter(Country==mycountry)
 
-  if(mycountry == "Rwanda") { # Addressing issues with Rwanda subnational region names
-    FP_source_subset <- FP_source_subset %>%
-      dplyr::mutate(Region = dplyr::case_when(Region == "Ouest" ~ "West",
-                                Region == "Sud" ~ "South",
-                                Region == "Est" ~ "East",
-                                Region == "Ville de Kigali" ~ "Kigali",
-                                Region == "Kigali City" ~ "Kigali",
-                                TRUE ~ as.character(Region))) %>%
-      dplyr::filter(average_year > 2008) # removes old regions
-  }
-
-  if(mycountry == "Nigeria") { # Addressing issues with Nigeria subnational region names
-    FP_source_subset <- FP_source_subset %>%
-      dplyr::mutate(Region = dplyr::case_when(Region == "Northeast" ~ "North East",
-                                Region == "Northwest" ~ "North West",
-                                Region == "Southeast" ~ "South East",
-                                Region == "Southwest" ~ "South West",
-                                TRUE ~ as.character(Region)))
-  }
-
-  if(mycountry == "Cote d'Ivoire") { # Addressing issues with Cote d'Ivoire subnational region names
-    FP_source_subset <- FP_source_subset %>%
-      dplyr::mutate(Region = dplyr::case_when(Region == "Center-East" ~ "Center East",
-                              Region == "Center-North" ~ "Center North",
-                              Region == "Center-West" ~ "Center West",
-                              Region == "Center-South" ~ "Center South",
-                              TRUE ~ as.character(Region)))
+    if(mycountry == "Rwanda") { # Addressing issues with Rwanda subnational region names
+      mydata <- mydata %>%
+        dplyr::mutate(Region = dplyr::case_when(Region == "Ouest" ~ "West",
+                                                Region == "Sud" ~ "South",
+                                                Region == "Est" ~ "East",
+                                                Region == "Ville de Kigali" ~ "Kigali",
+                                                Region == "Kigali City" ~ "Kigali",
+                                                TRUE ~ as.character(Region))) %>%
+        dplyr::filter(average_year > 2008) # removes old regions
     }
 
-    FP_source_subset <- FP_source_subset %>%
-      dplyr::filter(n_Other >= 10 | n_Public >= 10 | n_Commercial_medical >= 10) %>% # Remove sample size less than 10, replace SE with max SE for region-method combo
+    if(mycountry == "Nigeria") { # Addressing issues with Nigeria subnational region names
+      mydata <- mydata %>%
+        dplyr::mutate(Region = dplyr::case_when(Region == "Northeast" ~ "North East",
+                                                Region == "Northwest" ~ "North West",
+                                                Region == "Southeast" ~ "South East",
+                                                Region == "Southwest" ~ "South West",
+                                                TRUE ~ as.character(Region)))
+    }
+
+    if(mycountry == "Cote d'Ivoire") { # Addressing issues with Cote d'Ivoire subnational region names
+      mydata <- mydata %>%
+        dplyr::mutate(Region = dplyr::case_when(Region == "Center-East" ~ "Center East",
+                                                Region == "Center-North" ~ "Center North",
+                                                Region == "Center-West" ~ "Center West",
+                                                Region == "Center-South" ~ "Center South",
+                                                TRUE ~ as.character(Region)))
+    }
+
+    mydata <- mydata %>%
+      dplyr::filter(n_Other >= 5 | n_Public >= 5 | n_Commercial_medical >= 5) %>% # Remove sample size less than 10, replace SE with max SE for region-method combo
       dplyr::mutate(Other.SE = ifelse(Other.SE < 0.01, 0.01, Other.SE)) %>%
       dplyr::mutate(Public.SE = ifelse(Public.SE < 0.01, 0.01, Public.SE)) %>%
-      dplyr::mutate(Commercial_medical.SE = ifelse(Commercial_medical.SE < 0.01, 0.01, Commercial_medical.SE))
+      dplyr::mutate(Commercial_medical.SE = ifelse(Commercial_medical.SE < 0.01, 0.01, Commercial_medical.SE)) %>%
+      dplyr::mutate(Country = as.factor(Country)) %>%
+      droplevels() # remove factor levels of other countries
+  }
 
-  return(FP_source_subset)
+  return(mydata)
 }
