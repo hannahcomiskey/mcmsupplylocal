@@ -2,13 +2,17 @@
 % Please edit documentation in R/run_subnational_jags_model.R
 \name{run_subnational_jags_model}
 \alias{run_subnational_jags_model}
-\title{Run the jags model for estimating the proportion of modern contraceptive methods supplied by the public & private Sectors using a Bayesian hierarchical penalized spline model}
+\title{Run the jags model for estimating the proportion of modern contraceptive methods supplied by the public & private sectors at a subnational level using a Bayesian hierarchical penalized spline model}
 \usage{
 run_subnational_jags_model(
   jagsdata,
   jagsparams,
   local = FALSE,
   spatial = FALSE,
+  main_path = "results/",
+  n_iter = 80000,
+  n_burnin = 10000,
+  n_thin = 35,
   mycountry
 )
 }
@@ -21,6 +25,14 @@ run_subnational_jags_model(
 
 \item{spatial}{TRUE/FALSE. Default is FALSE. spatial=FALSE retrieves the data for all subnational provinces across all countries without GPS information. spatial=TRUE retrieves for data for countries with GPS information as well as FP source data.}
 
+\item{main_path}{Default is "results/". String to indicate where to save results.}
+
+\item{n_iter}{Default is 80000. Number of itterations to do in JAGS model.}
+
+\item{n_burnin}{Default is 10000. Number of samples to burn-in in JAGS model.}
+
+\item{n_thin}{Default is 35. Number of samples to thin by in JAGS model.}
+
 \item{mycountry}{The country name of interest in a local run. You must have local=TRUE for this functionality. A list of possible countries available found in data/mycountries.rda.}
 }
 \value{
@@ -28,5 +40,5 @@ returns the jags model object
 importFrom("stats", "cor", "filter", "lag")
 }
 \description{
-Run the jags model for estimating the proportion of modern contraceptive methods supplied by the public & private Sectors using a Bayesian hierarchical penalized spline model
+Run the jags model for estimating the proportion of modern contraceptive methods supplied by the public & private sectors at a subnational level using a Bayesian hierarchical penalized spline model
 }

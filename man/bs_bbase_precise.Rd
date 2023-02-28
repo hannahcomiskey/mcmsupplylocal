@@ -2,7 +2,7 @@
 % Please edit documentation in R/bs_bbase_precise.R
 \name{bs_bbase_precise}
 \alias{bs_bbase_precise}
-\title{Get precisly aligned basis functions}
+\title{Get precisely aligned basis functions}
 \usage{
 bs_bbase_precise(
   x = x,
@@ -32,7 +32,7 @@ knots.k is a vector of transformed knots.
 Kstar is the knot point of last observation
 }
 \description{
-Get precisly aligned basis functions
+Get precisely aligned basis functions
 }
 \examples{
 all_years <- seq(from = 1990, to = 2030.5, by=0.5)
