@@ -90,6 +90,13 @@ get_subnational_modelinputs <- function(fp2030=TRUE, local=FALSE, spatial=FALSE,
     dplyr::select(Region, index_subnat, Country, index_country) %>%
     dplyr::distinct() # table of country and regions (repeats in region names)
 
+  index_superregion_tbl <- clean_FPsource %>%
+    group_by(index_superregion, index_country) %>%
+    dplyr::select(Country, index_country, Super_region, index_superregion) %>%
+    distinct()
+
+  match_superregion <- index_superregion_tbl$index_superregion
+
   match_country <- index_country_subnat_tbl$index_country
 
   match_years <- clean_FPsource$index_year # observation year indexes in the prediction years
@@ -140,6 +147,7 @@ get_subnational_modelinputs <- function(fp2030=TRUE, local=FALSE, spatial=FALSE,
               n_country = n_country,
               n_subnat = n_subnat,
               n_super_region = n_superregion,
+              matchsuperregion = match_superregion,
               matchsubnat = match_subnat,
               matchcountry = match_country,
               matchmethod = match_method,
