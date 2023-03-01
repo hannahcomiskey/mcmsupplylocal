@@ -1,16 +1,25 @@
 Package: mcmsupplylocal
 Type: Package
-Title: What the Package Does (Title Case)
+Title: Estimates the proprotion of modern contraceptive supplied by the public and private sectors over time
 Version: 0.1.0
-Author: Who wrote it
-Maintainer: The package maintainer <yourself@somewhere.net>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
-License: What license is it under?
+Author: Hannah Comiskey, Prof. Leontine Alkema, Dr. Niamh Cahill
+Maintainer: Hannah Comiskey <hannah.comiskey.2015@mumail.ie>
+Description: Estimates the proprotion of modern contraceptive supplied by the public and private sectors over time using demographic and health surveys. 
+We use Bayesian hierarchical modelling techiques to promote precisie estimation for subnational districts where there is little to no data present. The model also incorporates geographic data to have an optional spatial compomnent.
+License: MIT
 Encoding: UTF-8
 LazyData: true
 Suggests: 
     testthat (>= 3.0.0)
+    R2jags 
+    runjags 
+    tidyverse 
+    tidybayes 
+    foreach 
+    doMC 
+    sf 
+    spdep 
+    geodata
 Config/testthat/edition: 3
 Depends: 
     R (>= 2.10)
