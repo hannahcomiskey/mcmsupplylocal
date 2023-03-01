@@ -4,10 +4,9 @@
 #' @param polys Spatial polygons to connect
 #' @param nb Disjointed neighbourhood matrix
 #' @param distance Default is "centroid".
-#' @import raster sf spdep
 #' @export
-mstconnect <- function(polys, nb, distance="centroid"){
 
+mstconnect <- function(polys, nb, distance="centroid"){
   if(distance == "centroid"){
     coords = sf::st_coordinates(sf::st_centroid(sf::st_geometry(polys)))
     dmat = as.matrix(dist(coords))

@@ -11,7 +11,7 @@
 #' @param mycountry The country name of interest in a local run. You must have local=TRUE for this functionality. A list of possible countries available found in data/mycountries.rda.
 #' @return returns the jags model object
 #' importFrom("stats", "cor", "filter", "lag")
-#' @import R2jags runjags tidyverse tidybayes foreach doMC
+#' @import R2jags runjags tidyverse tidybayes foreach doMC sf spdep geodata
 #' @export
 
 run_subnational_jags_model <- function(jagsdata, jagsparams, local=FALSE, spatial=FALSE, main_path = "results/",
