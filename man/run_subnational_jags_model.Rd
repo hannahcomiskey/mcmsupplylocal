@@ -13,7 +13,7 @@ run_subnational_jags_model(
   n_iter = 80000,
   n_burnin = 10000,
   n_thin = 35,
-  mycountry
+  mycountry = NULL
 )
 }
 \arguments{

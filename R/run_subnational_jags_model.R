@@ -15,7 +15,7 @@
 #' @export
 
 run_subnational_jags_model <- function(jagsdata, jagsparams, local=FALSE, spatial=FALSE, main_path = "results/",
-                                       n_iter = 80000, n_burnin = 10000, n_thin = 35, mycountry) {
+                                       n_iter = 80000, n_burnin = 10000, n_thin = 35, mycountry=NULL) {
   doMC::registerDoMC() # start parallel runs, save results in steps
 
   # get model file

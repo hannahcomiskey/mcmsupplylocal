@@ -59,10 +59,12 @@ get_subnational_modelinputs <- function(fp2030=TRUE, local=FALSE, spatial=FALSE,
   n_method <- c("Female Sterilization", "Implants", "Injectables", "IUD", "OC Pills" ) # As per the method correlation matrix
   n_country <- unique(country_subnat_tbl$Country)
   n_subnat <- country_subnat_tbl$Region
+  n_superregion <- unique(clean_FPsource$Super_region)
 
   clean_FPsource <- subnat_index_fun(clean_FPsource, n_subnat, country_subnat_tbl$Country) # Adding indexes to  data
   clean_FPsource <- country_index_fun(clean_FPsource, n_country)
   clean_FPsource <- method_index_fun(clean_FPsource, n_method)
+  clean_FPsource <- superregion_index_fun(clean_FPsource, n_superregion)
 
   all_years <- seq(from = startyear, to = endyear, by=0.5) # 6-monthly increments
   n_all_years <- length(all_years)
@@ -133,6 +135,11 @@ get_subnational_modelinputs <- function(fp2030=TRUE, local=FALSE, spatial=FALSE,
               C_count = length(n_country),
               P_count = length(n_subnat),
               M_count = length(n_method),
+              R_count = length(n_superregion),
+              n_method = n_method, # As per the method correlation matrix
+              n_country = n_country,
+              n_subnat = n_subnat,
+              n_super_region = n_superregion,
               matchsubnat = match_subnat,
               matchcountry = match_country,
               matchmethod = match_method,
