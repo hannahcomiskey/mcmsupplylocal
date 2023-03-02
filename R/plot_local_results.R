@@ -16,7 +16,7 @@ plot_point_estimates <- function(P_samps, pkg_data, vis_path) {
   mydata <- pkg_data$data
   all_years <- pkg_data$all_years
 
-  # Creating index tables for reference ------------------------------------------------------------
+  # Creating index tables for reference
   subnat_index_table <- mydata %>% select(Country, Region, index_subnat) %>% ungroup() %>% distinct()
   country_index_table <- tibble(Country = n_country, index_country = unique(mydata$index_country))
   method_index_table <- tibble(Method = n_method, index_method = 1:length(n_method))

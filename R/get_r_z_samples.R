@@ -1,6 +1,6 @@
 #' Get the r and z ratio point estimates from the separate chains of the JAGS model runs
 #' R and Z are the intermediate parameters that are used to estimates the final proportions. See the model file for context.
-#' @name get_r_z_point_estimates
+#' @name get_r_z_samples
 #' @param main_path String. Path where you have set your model results to be saved to.
 #' @param pkg_data Output of the `mcmsupplylocal::get_subnational_modelinputs()` function.
 #' @param local TRUE/FALSE. Default is FALSE. local=FALSE retrieves the data for all subnational provinces across all countries. local=TRUE retrieves data for only one country.
@@ -10,7 +10,7 @@
 #' @import R2jags runjags tidyverse tidybayes foreach doMC sf spdep geodata
 #' @export
 
-get_r_z_point_estimates <- function(main_path,  n_subnat, n_method, n_sector, n_all_years, K, B.ik, local=FALSE, spatial=FALSE) {
+get_r_z_samples <- function(main_path,  n_subnat, n_method, n_sector, n_all_years, K, B.ik, local=FALSE, spatial=FALSE) {
 
   chain1 <- readRDS(paste0(main_path,"1chain.rds"))
   chain1 <- chain1$BUGSoutput$sims.matrix %>% as_tibble()

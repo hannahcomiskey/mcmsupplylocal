@@ -40,16 +40,17 @@ get_P_point_estimates <- function(main_path, pkg_data, local=FALSE, spatial=FALS
                              floored_year = floor(all_years))
 
   if(local==FALSE) { # global model estimates
-    # Get ratio estimates
-    ratio_samps <- mcmsupplylocal::get_r_z_point_estimates(main_path, n_subnat, n_method, n_sector, n_all_years, K, B.ik, local=FALSE, spatial=FALSE)
 
-    # Calculate proportions using the full posterior sample
-    P_samps <- mcmsupplylocal::get_global_P_samps(main_path, ratio_samps$z, ratio_samps$r)
+    # Get ratio estimates. Saves to main_path folder pathway.
+    mcmsupplylocal::get_r_z_samples(main_path, n_subnat, n_method, n_sector, n_all_years, K, B.ik, local=FALSE, spatial=FALSE)
+
+    # Calculate proportions using the full posterior sample. Reads in the r and z variables using the main_path folder.
+    mcmsupplylocal::get_global_P_samps(main_path)
 
     # Get point estimates for median, 95% and 80% credible intervals
-    all_p_pub <- mcmsupplylocal::get_P_median_quantile(subnat_index_table, method_index_table, "Public", year_index_table, P_samps$P_public)
-    all_p_CM <- mcmsupplylocal::get_P_median_quantile(subnat_index_table, method_index_table, "Commercial_medical", year_index_table, P_samps$P_CM)
-    all_p_other <- mcmsupplylocal::get_P_median_quantile(subnat_index_table, method_index_table, "Other", year_index_table, P_samps$P_other)
+    all_p_pub <- mcmsupplylocal::get_global_P_estimates(subnat_index_table, method_index_table, "Public", year_index_table, P_samps$P_public)
+    all_p_CM <- mcmsupplylocal::get_global_P_estimates(subnat_index_table, method_index_table, "Commercial_medical", year_index_table, P_samps$P_CM)
+    all_p_other <- mcmsupplylocal::get_global_P_estimates(subnat_index_table, method_index_table, "Other", year_index_table, P_samps$P_other)
 
     all_p <- rbind(all_p_pub, all_p_CM)
     all_p <- rbind(all_p, all_p_other)
