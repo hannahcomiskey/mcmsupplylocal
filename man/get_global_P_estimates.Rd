@@ -5,14 +5,19 @@
 \title{Get median, 95% and 80% credible intervals for posterior samples of P from JAGS model}
 \usage{
 get_global_P_estimates(
+  main_path,
+  P_samp,
   subnat_index_table,
   method_index_table,
   sector_type,
-  year_index_table,
-  Psamps
+  year_index_table
 )
 }
 \arguments{
+\item{main_path}{String. Path where you have set your model results to be saved to}
+
+\item{P_samp}{String. Options are: "P_public.RDS","P_CM.RDS" and "P_other.RDS"}
+
 \item{subnat_index_table}{Dataframe with subnational district indexing applied. Used to match estimates to data.}
 
 \item{method_index_table}{Dataframe with method indexing applied. Used to match estimates to data.}
@@ -20,8 +25,6 @@ get_global_P_estimates(
 \item{sector_type}{String. Name of sector you are interested in. One of either ("Public", "Commercial medical", "Other")}
 
 \item{year_index_table}{Dataframe with time indexing applied. Used to match estimates to data.}
-
-\item{Psamps}{posterior samples of P from JAGS model}
 }
 \value{
 Dataframe of labelled posterior samples with median, 95% and 80% credible intervals estimates.
@@ -30,5 +33,5 @@ Dataframe of labelled posterior samples with median, 95% and 80% credible interv
 Get median, 95% and 80% credible intervals for posterior samples of P from JAGS model
 }
 \examples{
-get_global_P_estimates(subnat_index_table, method_index_table, sector_type, year_index_table, Psamps)
+get_global_P_estimates(subnat_index_table, method_index_table, sector_type, year_index_table, P_samps)
 }

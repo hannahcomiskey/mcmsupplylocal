@@ -48,9 +48,9 @@ get_P_point_estimates <- function(main_path, pkg_data, local=FALSE, spatial=FALS
     mcmsupplylocal::get_global_P_samps(main_path)
 
     # Get point estimates for median, 95% and 80% credible intervals
-    all_p_pub <- mcmsupplylocal::get_global_P_estimates(subnat_index_table, method_index_table, "Public", year_index_table, P_samps$P_public)
-    all_p_CM <- mcmsupplylocal::get_global_P_estimates(subnat_index_table, method_index_table, "Commercial_medical", year_index_table, P_samps$P_CM)
-    all_p_other <- mcmsupplylocal::get_global_P_estimates(subnat_index_table, method_index_table, "Other", year_index_table, P_samps$P_other)
+    all_p_pub <- mcmsupplylocal::get_global_P_estimates(main_path, "P_public.RDS", subnat_index_table, method_index_table, "Public", year_index_table)
+    all_p_CM <- mcmsupplylocal::get_global_P_estimates(main_path, "P_CM.RDS", subnat_index_table, method_index_table, "Commercial_medical", year_index_table)
+    all_p_other <- mcmsupplylocal::get_global_P_estimates(main_path, "P_other.RDS", subnat_index_table, method_index_table, "Other", year_index_table)
 
     all_p <- rbind(all_p_pub, all_p_CM)
     all_p <- rbind(all_p, all_p_other)
@@ -78,7 +78,7 @@ get_P_point_estimates <- function(main_path, pkg_data, local=FALSE, spatial=FALS
   if(is.null(mycountry)==TRUE) {
     saveRDS(all_p, file=paste0(main_path,"P_point_estimates.RDS"))
   } else {
-    saveRDS(all_p, file=paste0(main_path,paste0(mycountry,"_P_point_estimates.RDS")))
+    saveRDS(all_p, file=paste0(main_path,mycountry,"_P_point_estimates.RDS"))
   }
   return(all_p)
 }

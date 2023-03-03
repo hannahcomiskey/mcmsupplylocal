@@ -117,7 +117,7 @@ get_subnational_data <- function(local=FALSE, mycountry=NULL) {
     }
 
     mydata <- mydata %>%
-      dplyr::filter(n_Other >= 5 | n_Public >= 5 | n_Commercial_medical >= 5) %>% # Remove sample size less than 10, replace SE with max SE for region-method combo
+      dplyr::filter(n_Other >= 5 | n_Public >= 5 | n_Commercial_medical >= 5) %>% # Remove sample size less than 5, replace SE with max SE for region-method combo
       dplyr::mutate(Other.SE = ifelse(Other.SE < 0.01, 0.01, Other.SE)) %>%
       dplyr::mutate(Public.SE = ifelse(Public.SE < 0.01, 0.01, Public.SE)) %>%
       dplyr::mutate(Commercial_medical.SE = ifelse(Commercial_medical.SE < 0.01, 0.01, Commercial_medical.SE)) %>%

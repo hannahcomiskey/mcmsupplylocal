@@ -6,7 +6,14 @@
 #' @return Data frame of labelled posterior samples with median, 95% and 80% credible intervals estimates.
 #' @export
 
-plot_point_estimates <- function(P_samps, pkg_data, vis_path) {
+plot_point_estimates <- function(main_path, pkg_data, vis_path, local=FALSE, mycountry=NULL) {
+
+  if(local==TRUE & is.null(mycountry)==FALSE) {
+    P_samps <- readRDS(paste0(main_path, mycountry,"_P_point_estimates.RDS"))
+  } else{
+    P_samps <- readRDS(paste0(main_path,"P_point_estimates.RDS"))
+  }
+
   # Get model inputs for cross matching to estimates
   n_country <- pkg_data$n_country
   n_subnat <- pkg_data$n_subnat
@@ -68,9 +75,10 @@ plot_point_estimates <- function(P_samps, pkg_data, vis_path) {
       ggplot2::guides(color="none") +
       ggplot2::facet_wrap(~Method)
 
+    country_name <- subnat_index_table$Country[i]
     region_name <- stringr::str_replace_all(subnat_index_table$Region[i], "[[:punct:]]", "_") # remove special characters
     region_name <- stringr::str_replace_all(region_name, " ", "") # remove spaces
 
-    ggplot2::ggsave(ci_plot, filename = paste0(n_country,"_",region_name,"_p.pdf"), path = vis_path, height=12, width=15)
+    ggplot2::ggsave(ci_plot, filename = paste0(country_name,"_",region_name,"_p.pdf"), path = vis_path, height=12, width=15)
   }
 }

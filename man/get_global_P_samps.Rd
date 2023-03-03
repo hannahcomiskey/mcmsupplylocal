@@ -8,10 +8,6 @@ get_global_P_samps(main_path)
 }
 \arguments{
 \item{main_path}{String. Path where you have set your model results to be saved to.}
-
-\item{r}{R variable from the JAGS output}
-
-\item{z}{Z variable from the JAGS output}
 }
 \value{
 Saved samples for public, commercial medical and other supply shares.
