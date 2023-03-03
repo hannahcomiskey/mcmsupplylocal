@@ -11,16 +11,17 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Introduction 
 
-- This vignette explains how to estimate and plot model estimates at a subnational level for countries participating in the Family Planning 2030 (FP2030). 
-- We refer to this kind of model run as a 'global' model run as it involves multiple countries from across the world. 
-- In contrast, when we are only using the data for a single country, we call this a 'local' model run. 
-- A vignette for how to run subnational models at the local level can be found in the /vignette folder under 'how_to_run_subnational_local_models.Rmd'.
+- This vignette explains how to estimate and plot model estimates at a subnational level for a single country participating in the Family Planning 2030 (FP2030). 
+- We refer to this kind of model run as a 'local' model run as it involves only one country. 
+- In contrast, when we are only using the data for multiple countries, we call this a 'global' model run. 
+- A vignette for how to run subnational models at the global level can be found in the /vignette folder under 'how_to_run_subnational_global_models.Rmd'.
 
 ## To begin...
 - You will need to create some additional folders before you begin. Specifically, you need a folder for storing your results in and another for visualisations. 
 - I suggest you that you separate out your global and local model runs, and also your spatial from your non-spatial. A lot of the intermediate calculations will have the same file names so if they are not correctly stored, you may end up mixing up results. 
 
-- For example: Below, I am doing a global run with no additional spatial component in the model. As such, I create the following folders in my working directory "results/global_nonspatial/" and "visualisations/global_nonspatial/". I will list these pathways in the functions below. 
+- For example: 
+    Below, I am doing a local run of Nepal with an additional spatial component in the model. As such, I create the following folders in my working directory "results/local_spatial/" and "visualisations/local_spatial/". I will list these pathways in the functions below. 
 
 
 ## Load your library
@@ -35,11 +36,11 @@ This function 'get_subnational_data' retrieves the raw family planning subnation
 
 The parameters of this function are: 
 
-- local: Default is FALSE. This indicates whether or not you are running a local (single country) or global (multicountry) model. 
-- mycountry: Default is NULL. When local=TRUE, this parameter indicates the name of the country, as a string, whose data you wish to use in your local model run. A list of country names can be found in the /vignette folder under 'country_names.Rmd'. 
+- local: Default is FALSE. This indicates whether or not you are running a local (single country) or global (multicountry) model. We set this as TRUE here.
+- mycountry: Default is NULL. When local=TRUE, this parameter indicates the name of the country, as a string, whose data you wish to use in your local model run. A list of country names can be found in the /vignette folder under 'country_names.Rmd'. We set this to "Nepal" for this model run. 
 
 ```{r, include=TRUE, message=FALSE}
-raw_subnatdata <- mcmsupplylocal::get_subnational_data(local=FALSE, mycountry=NULL) %>%
+raw_subnatdata <- mcmsupplylocal::get_subnational_data(local=TRUE, mycountry="Nepal") %>%
   dplyr::arrange(Country, Region, Method, average_year)
 
 dplyr::glimpse(raw_subnatdata)
@@ -83,8 +84,8 @@ This function returns the inputs for the JAGS model in a list:
 
 
 ```{r, include=TRUE, message=FALSE}
-pkg_data <- mcmsupplylocal::get_subnational_modelinputs(fp2030=TRUE, local=FALSE,
-                                                          spatial=FALSE, mycountry=NULL,
+pkg_data <- mcmsupplylocal::get_subnational_modelinputs(fp2030=TRUE, local=TRUE,
+                                                          spatial=TRUE, mycountry="Nepal",
                                                           startyear=1990, endyear=2028.5,
                                                           nsegments=12, raw_subnatdata)
 
@@ -94,41 +95,73 @@ dplyr::glimpse(pkg_data$data)
 
 ## Set up your JAGS model
 
-1. Get your global correlations - this data is preloaded for the global subnational correlations between the rates of change in supplies of methods in the public and provate sectors. 
+1. Get your global covariance matrix and intercepts for informative priors 
 
-- If you wish to calculate your own global correlations, please see the 'data_raw/estimated_global_subnational_correlations.R' file for an instruction on how to do so. 
+Load your informative priors for the local JAGS model. If you wish to calculate your own priors, you can do so using the estimates from the corresponding (spatial/non-spatial) global model. An example of how to get these estimates in found in the /data-raw folder.
 
 ```{r, include=TRUE, message=FALSE}
-load("data/estimated_global_subnational_correlations.rda")
+load("data/sigma_delta_hat.rda")
+load("data/median_alphacms.rda")
+load("data/tau_alpha_pms_hat.rda")
 
-estimated_rho_matrix <- estimated_global_subnational_correlations %>%
-  dplyr::select(row, column, public_cor, private_cor)
-
-head(estimated_rho_matrix)
-
-my_SE_rho_matrix <- estimated_rho_matrix %>%
-  dplyr::select(public_cor, private_cor)
+myalpha_med <- median_alphacms[,,"Nepal"] # Take out relevant country
 ```
+
+Get your neighbours list - this is for the variance-covariance matrix of the spatial CAR component. The 'path' parameter lists where you wish to store your geographic boundaries data. 
+
+```{r, include=TRUE, message=FALSE}
+nepal_geodata <- geodata::gadm(country="Nepal", level=1, path="tests/boundries/")
+
+nepal_geodata <- nepal_geodata %>%
+  sf::st_as_sf() %>%
+  sf::st_make_valid() %>%
+  dplyr::select(COUNTRY, NAME_1, geometry) %>%
+  dplyr::rename(ADMIN_NAME = NAME_1)
+
+pkg_data$n_subnat # compare order of subnational districts to order of ADMIN_NAME, make sure they match!
+```
+
+Get neighbourhood adjacency matrix and update the neighbourhood adjancency matrix if there are any islands. Calculate your neighbour count. 
+
+```{r, include=TRUE, message=FALSE}
+
+coords = sf::st_coordinates(sf::st_centroid(sf::st_geometry(nepal_geodata))) # neighbourhood adjacency matrix
+queen_nb = spdep::poly2nb(nepal_geodata, row.names=nepal_geodata$ADMIN_NAME, queen=TRUE)
+
+
+mcadd = mcmsupplylocal::mstconnect(nepal_geodata,queen_nb) # update for islands
+
+tmp_nb1 <- spdep::nb2mat(mcadd, style="B")
+rownames(tmp_nb1) <- nepal_geodata$ADMIN_NAME
+colnames(tmp_nb1) <- nepal_geodata$ADMIN_NAME
+
+D = diag(rowSums(tmp_nb1)) # Neighbour count
+
+```
+
 
 2. Create your JAGS data list - using the data retrieved in the 'get_subnational_modelinputs' function.
 
 ```{r, include=TRUE, message=FALSE}
-jags_data <- list(y = pkg_data$data[,c("Public", "Commercial_medical")], 
+
+jags_data <- list(y = pkg_data$data[,c("Public", "Commercial_medical")],
                   se_prop = pkg_data$data[,c("Public.SE", "Commercial_medical.SE")],
-                  rho = my_SE_rho_matrix, 
-                  kstar = pkg_data$Kstar,
-                  B.ik = pkg_data$B.ik, 
-                  n_years = pkg_data$n_all_years,
+                  alpha_cms_hat = myalpha_med,
+                  tau_alpha_snms_hat = tau_alpha_pms_hat,
+                  natRmat = sigma_delta_hat,
+                  natdf = length(pkg_data$n_method)+1,
+                  kstar = pkg_data$kstar,
+                  B.ik = pkg_data$B.ik,
+                  n_years = pkg_data$n_years,
                   n_obs = pkg_data$n_obs,
                   K = pkg_data$K,
                   H = pkg_data$H,
-                  C_count = pkg_data$C_count,
+                  W = tmp_nb1,
+                  D = D,
+                  P_zeroes = rep(0, length(pkg_data$n_subnat)),
                   P_count = pkg_data$P_count,
-                  R_count = pkg_data$R_count,
                   M_count = pkg_data$M_count,
                   matchsubnat = pkg_data$matchsubnat,
-                  matchcountry = pkg_data$matchcountry,
-                  matchregion = pkg_data$matchsuperregion,
                   matchmethod = pkg_data$matchmethod,
                   matchyears = pkg_data$matchyears
 )
@@ -137,12 +170,11 @@ jags_data <- list(y = pkg_data$data[,c("Public", "Commercial_medical")],
 
 3. Set your parameters to monitor - list the paramets you are interested in getting estimates of
 ```{r, include=TRUE, message=FALSE}
-jags_pars <- c("alpha_pms", 
-               "alpha_cms",
-               "tau_alpha",
+jags_pars <- c("P",
+               "alpha_pms",
+               "phi",
                "beta.k",
-               "sigma_delta",
-               "delta.k")
+               "inv.sigma_delta")
 ```
 
 ## Run JAGS model
@@ -160,8 +192,8 @@ The parameters of this function include:
 
 ```{r message=FALSE, eval=FALSE}
 mod_global <- run_subnational_jags_model(jagsdata = jags_data, jagsparams = jags_pars, 
-                                         local=FALSE, spatial=FALSE, main_path = "results/global_nonspatial/",
-                                       n_iter = 80000, n_burnin = 10000, n_thin = 35, mycountry=NULL)
+                                         local=TRUE, spatial=TRUE, main_path = "results/local_spatial/",
+                                       n_iter = 80000, n_burnin = 10000, n_thin = 35, mycountry="Nepal")
 
 ```
 
@@ -175,7 +207,7 @@ The parameters of this function include:
 
 
 ```{r, message=FALSE, eval=FALSE}
-get_P_point_estimates(main_path = "results/global_nonspatial/", pkg_data, local=FALSE, spatial=FALSE, mycountry=NULL)
+get_P_point_estimates(main_path = "results/local_spatial/", pkg_data, local=TRUE, spatial=TRUE, mycountry="Nepal")
 ```
 
 
@@ -188,7 +220,7 @@ The parameters of this function include:
 - vis_path: The pathway to the folder you wish to store your visualisations in. 
 
 ```{r, include=TRUE, message=FALSE, eval=FALSE}
-plot_point_estimates(main_path = "results/global_nonspatial/", pkg_data = pkg_data, vis_path = "visualisations/global_nonspatial/", local=FALSE, mycountry=NULL)
+plot_point_estimates(main_path = "results/local_spatial/", pkg_data = pkg_data, vis_path = "visualisations/local_spatial/", local=TRUE, mycountry="Nepal")
 ```
 
 ## Ta-da! 
@@ -196,5 +228,5 @@ plot_point_estimates(main_path = "results/global_nonspatial/", pkg_data = pkg_da
 We can review the model plots by navigating to the pathway labelled as 'vis_path' from the 'plot_point_estimates' function above.
 
 ```{r, echo=FALSE, message=FALSE}
-knitr::include_graphics("Ghana_Western_p.pdf", error=FALSE, dpi = 300)
+knitr::include_graphics("Nepal_Western_p.pdf", error=FALSE)
 ```
