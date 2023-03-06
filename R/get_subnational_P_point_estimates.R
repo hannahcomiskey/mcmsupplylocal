@@ -1,6 +1,6 @@
 #' Get the r and z ratio point estimates from the separate chains of the JAGS model runs
 #' R and Z are the intermediate parameters that are used to estimates the final proportions. See the model file for context.
-#' @name get_P_point_estimates
+#' @name get_subnational_P_point_estimates
 #' @param main_path String. Path where you have set your model results to be saved to.
 #' @param pkg_data Output of the `mcmsupplylocal::get_subnational_modelinputs()` function.
 #' @param local TRUE/FALSE. Default is FALSE. local=FALSE retrieves the data for all subnational provinces across all countries. local=TRUE retrieves data for only one country.
@@ -10,7 +10,7 @@
 #' @import R2jags runjags tidyverse tidybayes foreach doMC sf spdep geodata
 #' @export
 
-get_P_point_estimates <- function(main_path, pkg_data, local=FALSE, spatial=FALSE, mycountry=NULL) {
+get_subnational_P_point_estimates <- function(main_path, pkg_data, local=FALSE, spatial=FALSE, mycountry=NULL) {
 
   # Get model inputs for cross matching to estimates
   n_country <- pkg_data$n_country
@@ -42,15 +42,15 @@ get_P_point_estimates <- function(main_path, pkg_data, local=FALSE, spatial=FALS
   if(local==FALSE) { # global model estimates
 
     # Get ratio estimates. Saves to main_path folder pathway.
-    mcmsupplylocal::get_r_z_samples(main_path, n_subnat, n_method, n_sector, n_all_years, K, B.ik, local=FALSE, spatial=FALSE)
+    mcmsupplylocal::get_subnational_r_z_samples(main_path, n_subnat, n_method, n_sector, n_all_years, K, B.ik, local=FALSE, spatial=FALSE)
 
     # Calculate proportions using the full posterior sample. Reads in the r and z variables using the main_path folder.
-    mcmsupplylocal::get_global_P_samps(main_path)
+    mcmsupplylocal::get_subnational_global_P_samps(main_path)
 
     # Get point estimates for median, 95% and 80% credible intervals
-    all_p_pub <- mcmsupplylocal::get_global_P_estimates(main_path, "P_public.RDS", subnat_index_table, method_index_table, "Public", year_index_table)
-    all_p_CM <- mcmsupplylocal::get_global_P_estimates(main_path, "P_CM.RDS", subnat_index_table, method_index_table, "Commercial_medical", year_index_table)
-    all_p_other <- mcmsupplylocal::get_global_P_estimates(main_path, "P_other.RDS", subnat_index_table, method_index_table, "Other", year_index_table)
+    all_p_pub <- mcmsupplylocal::get_subnational_global_P_estimates(main_path, "P_public.RDS", subnat_index_table, method_index_table, "Public", year_index_table)
+    all_p_CM <- mcmsupplylocal::get_subnational_global_P_estimates(main_path, "P_CM.RDS", subnat_index_table, method_index_table, "Commercial_medical", year_index_table)
+    all_p_other <- mcmsupplylocal::get_subnational_global_P_estimates(main_path, "P_other.RDS", subnat_index_table, method_index_table, "Other", year_index_table)
 
     all_p <- rbind(all_p_pub, all_p_CM)
     all_p <- rbind(all_p, all_p_other)
@@ -68,9 +68,9 @@ get_P_point_estimates <- function(main_path, pkg_data, local=FALSE, spatial=FALS
     other_samps <- dplyr::bind_rows(chain1[,stringr::str_detect(colnames(chain1), "P\\[3,")], chain2[,stringr::str_detect(colnames(chain2), "P\\[3,")])
 
     # Get point estimates for median, 95% and 80% credible intervals
-    pub_df <- mcmsupplylocal::get_local_P_estimates(public_samps, colnames(public_samps), subnat_index_table, method_index_table, sector_index_table, year_index_table)
-    CM_df <- mcmsupplylocal::get_local_P_estimates(CM_samps, colnames(CM_samps), subnat_index_table, method_index_table, sector_index_table, year_index_table)
-    other_df <- mcmsupplylocal::get_local_P_estimates(other_samps, colnames(other_samps), subnat_index_table, method_index_table, sector_index_table, year_index_table)
+    pub_df <- mcmsupplylocal::get_subnational_local_P_estimates(public_samps, colnames(public_samps), subnat_index_table, method_index_table, sector_index_table, year_index_table)
+    CM_df <- mcmsupplylocal::get_subnational_local_P_estimates(CM_samps, colnames(CM_samps), subnat_index_table, method_index_table, sector_index_table, year_index_table)
+    other_df <- mcmsupplylocal::get_subnational_local_P_estimates(other_samps, colnames(other_samps), subnat_index_table, method_index_table, sector_index_table, year_index_table)
 
     all_p <- bind_rows(pub_df, CM_df, other_df)
   }

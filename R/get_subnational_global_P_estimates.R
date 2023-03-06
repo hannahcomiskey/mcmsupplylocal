@@ -1,5 +1,5 @@
 #' Get median, 95% and 80% credible intervals for posterior samples of P from JAGS model
-#' @name get_global_P_estimates
+#' @name get_subnational_global_P_estimates
 #' @param main_path String. Path where you have set your model results to be saved to
 #' @param P_samp String. Options are: "P_public.RDS","P_CM.RDS" and "P_other.RDS"
 #' @param subnat_index_table Dataframe with subnational district indexing applied. Used to match estimates to data.
@@ -8,10 +8,10 @@
 #' @param year_index_table Dataframe with time indexing applied. Used to match estimates to data.
 #' @return Dataframe of labelled posterior samples with median, 95% and 80% credible intervals estimates.
 #' @export
-#' @examples get_global_P_estimates(subnat_index_table, method_index_table, sector_type, year_index_table, P_samps)
+#' @examples get_subnational_global_P_estimates(subnat_index_table, method_index_table, sector_type, year_index_table, P_samps)
 
 # Calculation for sector data
-get_global_P_estimates <- function(main_path, P_samp, subnat_index_table, method_index_table, sector_type, year_index_table) { # Median alpha values
+get_subnational_global_P_estimates <- function(main_path, P_samp, subnat_index_table, method_index_table, sector_type, year_index_table) { # Median alpha values
 
   P_samps <- readRDS(paste0(main_path,P_samp))
 

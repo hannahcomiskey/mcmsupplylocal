@@ -207,7 +207,7 @@ The parameters of this function include:
 
 
 ```{r, message=FALSE, eval=FALSE}
-get_P_point_estimates(main_path = "results/local_spatial/", pkg_data, local=TRUE, spatial=TRUE, mycountry="Nepal")
+get_subnational_P_point_estimates(main_path = "results/local_spatial/", pkg_data, local=TRUE, spatial=TRUE, mycountry="Nepal")
 ```
 
 
@@ -220,12 +220,12 @@ The parameters of this function include:
 - vis_path: The pathway to the folder you wish to store your visualisations in. 
 
 ```{r, include=TRUE, message=FALSE, eval=FALSE}
-plot_point_estimates(main_path = "results/local_spatial/", pkg_data = pkg_data, vis_path = "visualisations/local_spatial/", local=TRUE, mycountry="Nepal")
+plot_subnational_point_estimates(main_path = "results/local_spatial/", pkg_data = pkg_data, vis_path = "visualisations/local_spatial/", local=TRUE, mycountry="Nepal")
 ```
 
 ## Ta-da! 
 
-We can review the model plots by navigating to the pathway labelled as 'vis_path' from the 'plot_point_estimates' function above.
+We can review the model plots by navigating to the pathway labelled as 'vis_path' from the 'plot_subnational_point_estimates' function above.
 
 ```{r, echo=FALSE, message=FALSE}
 knitr::include_graphics("Nepal_Western_p.pdf", error=FALSE)
