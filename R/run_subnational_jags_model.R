@@ -19,10 +19,10 @@ run_subnational_jags_model <- function(jagsdata, jagsparams, local=FALSE, spatia
   doMC::registerDoMC() # start parallel runs, save results in steps
 
   # get model file
-  modfile <- ifelse(local==FALSE & spatial==FALSE, "model/globalrun_Bspline_model.txt", # global non-spatial model
-                    ifelse(local==FALSE & spatial==TRUE, "model/globalrun_Bspline_model_spatial.txt", # global spatial model
-                           ifelse(local==TRUE & spatial==FALSE,"model/local_run_wishart_model.txt", # local non spatial model,
-                                  "model/local_run_spatial_wishart_model.txt"))) # local spatial model
+  modfile <- ifelse(local==FALSE & spatial==FALSE, "model/global_subnational_nonspatial_model.txt", # global non-spatial model
+                    ifelse(local==FALSE & spatial==TRUE, "model/global_subnational_spatial_model.txt", # global spatial model
+                           ifelse(local==TRUE & spatial==FALSE,"model/local_subnational_nonspatial_model.txt", # local non spatial model,
+                                  "model/local_subnational_spatial_model.txt"))) # local spatial model
   n_chains = 2
 
   foreach(chain=1:n_chains) %dopar% {   ## Do chains separately ------------------------------
